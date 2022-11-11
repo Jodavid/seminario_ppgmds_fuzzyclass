@@ -1,7 +1,6 @@
 ---
 title: "Redes Bayesianas no pacote FuzzyClass"
 subtitle: "  "
-author: "Jodavid Ferreira"
 institute: "UFPB - PPGMDS"
 title-slide-attributes:
   data-background-image: images/ml_background.png
