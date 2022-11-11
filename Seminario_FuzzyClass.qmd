@@ -1,0 +1,517 @@
+---
+title: "Redes Bayesianas no pacote FuzzyClass"
+subtitle: "  "
+author: "Jodavid Ferreira"
+institute: "UFPB - PPGMDS"
+title-slide-attributes:
+  data-background-image: images/ml_background.png
+  data-background-size: contain
+  data-background-opacity: "0.2"
+format:
+  revealjs:
+    slide-number: c/t
+    css: ["theme/theme.css"]
+    theme: default #dark
+    footer: "Utilização do Pacote FuzzyClass - [FuzzyClass](https://github.com/Jodavid/FuzzyClass)"
+    logo: "images/logo.png"
+    smaller: True
+editor_options: 
+  chunk_output_type: inline
+---
+
+## Introdução
+
+<hr/>
+
+- Link: [https://cran.r-project.org/package=FuzzyClass](https://cran.r-project.org/package=FuzzyClass)
+
+![Página do FuzzyClass no CRAN.R](images/cran_fuzzyclass.png){fig-align="center" width="900"}
+
+------------------------------------------------------------------------
+
+## Introdução
+
+<hr/>
+
+- Link: [https://jodavid.github.io/FuzzyClass/](https://jodavid.github.io/FuzzyClass/)
+
+![Página do FuzzyClass no GitHub](images/FuzzyClassInGithub.png){fig-align="center" width="900"}
+
+------------------------------------------------------------------------
+
+
+## Compreensão da Problemática
+
+<hr/>
+
+<br/>
+
+-   É preciso ter uma visão clara do problema de negócio a ser resolvido.
+
+![](images/crisp.png){fig-align="center" width="600"}
+
+------------------------------------------------------------------------
+
+## Métodos de Tomada de Decisão
+
+<hr/>
+
+<br/>
+
+- Métodos de tomada de decisão;
+- Classificação;
+- Metodos supervisionados;
+
+
+![](images/metodo_supervisionado_ex.png){fig-align="center" width="600"}
+
+
+------------------------------------------------------------------------
+
+
+## Dados Tabulados (*Tidy Data*)
+
+<hr/>
+
+<br/> Há três regras inter-relacionadas que tornam um conjunto de dados arrumados (*tidy*):
+
+1.  Cada `variável` deve ter sua própria coluna.
+
+2.  Cada `observação` deve ter sua própria linha.
+
+3.  Cada `valor` deve ter sua própria célula.
+
+![](images/tidy_data_01.png){fig-align="center" width="400"}
+
+------------------------------------------------------------------------
+
+<br/> <br/> <br/> <br/> <br/>
+
+<h1 style="text-align: center;">
+
+Exemplos no R?
+
+</h1>
+
+
+------------------------------------------------------------------------
+
+## R - Instalação do Pacote
+
+<hr/>
+
+<br/> 
+
+- Forma 1:
+```{r, eval=FALSE, echo=TRUE}
+install.packages("FuzzyClass")
+```
+
+<br/> 
+<br/> 
+
+- Forma 2:
+```{r, eval=FALSE, echo=TRUE}
+# Installation
+install.packages("devtools")
+devtools::install_github("Jodavid/FuzzyClass")
+```
+
+------------------------------------------------------------------------
+
+## R - Lendo as funções do Pacote
+
+<hr/>
+
+<br/> 
+
+- Forma 1:
+```{r, eval=TRUE, echo=TRUE}
+library(FuzzyClass)
+```
+
+![](images/lendo_pacote_fuzzyclass.png){fig-align="center" width="600"}
+
+
+------------------------------------------------------------------------
+
+
+## R - Base de dados
+
+<hr/>
+
+<br/> 
+
+DataSet utilizado: `iris`
+
+<br/> 
+link: [https://www.kaggle.com/datasets/saurabh00007/iriscsv](https://www.kaggle.com/datasets/saurabh00007/iriscsv)
+
+<br/> 
+
+> **Problemática:** Através dos comprimentos das Sépalas e Pétalas, classificar corretamente as flores.
+
+<br/> 
+
+
+------------------------------------------------------------------------
+
+
+## R - Base de dados
+
+<hr/>
+
+<br/> 
+
+DataSet utilizado: `iris`
+
+<br/> 
+
+O Banco é composto por 6 variáveis que são detalhados a seguir.
+
+<br/> 
+
+##### Variáveis Existentes:
+
+- **Id:** Valor único por linha
+- **SepalLengthCm:** Comprimento da Sépala em cm
+- **SepalWidthCm:** Largura da Sépala em cm
+- **PetalLengthCm:** Comprimento da Pétala em cm
+- **PetalWidthCm:** Largura da Pétala em cm
+- **Species:** Tipo da espécie da flor
+
+
+<br/> 
+
+------------------------------------------------------------------------
+
+## R - Lendo a Base de dados
+
+<hr/>
+
+<br/> 
+
+Se o arquivo estiver em `.csv`, é possível ler a base de dados da seguinte forma
+
+```{r eval=TRUE, echo=TRUE}
+# Lendo Base de dados
+dados <- read.csv("dataset/iris.csv",sep = ",")
+
+# Visualizando um cabeçalho dos dados
+dados |> 
+  head(n = 10)
+```
+
+------------------------------------------------------------------------
+
+## R - Tratamento das variáveis
+
+<hr/>
+
+<br/> 
+
+Para facilitar, criar uma base em paralelo apenas com as variáveis que vai
+utilizar na aplicação do modelo.
+
+Neste caso vamos retirar a primeira coluna de `Id`, ela não é necessária neste
+caso.
+
+- Forma 1:
+```{r eval=F, echo=T}
+# Removendo colunas
+dados_editado <- dados[,-c(1)]
+```
+
+- Forma 2:
+```{r eval=TRUE, echo=TRUE, message=FALSE}
+library(dplyr)
+# Removendo colunas
+dados_editado <- dados |> 
+                 select(-Id)
+```
+
+```{r eval=TRUE, echo=TRUE, message=FALSE}
+# Visualizando nova base
+dados_editado  |> 
+  head(n=2)
+```
+
+
+------------------------------------------------------------------------
+
+## R - Classif. existentes no FuzzyClass
+
+<hr/>
+
+<br/> 
+
+Abaixo são descritos os métodos de acordo com as abordagens de Zadeh e Buckley
+
+|  Fuzzy - Zadeh   | Fuzzy Buckley     |
+| :-- | --: |
+| FuzzyBetaNaiveBayes | ExpNBFuzzyParam |
+| FuzzyBinomialNaiveBayes | GauNBFuzzyParam |
+| FuzzyExponentialNaiveBayes | PoiNBFuzzyParam |
+| FuzzyGammaNaiveBayes | |
+| FuzzyGaussianNaiveBayes | |
+| FuzzyPoissonNaiveBayes | |
+| FuzzyTrapezoidalNaiveBayes | |
+| FuzzyTriangularNaiveBayes | |
+
+e o `FuzzyNaiveBayes` que trabalha com dados qualitativos de não assume dist.
+de probabilidade.
+
+
+------------------------------------------------------------------------
+
+## Help do Fuzzy Class
+
+<hr/>
+
+<br/> 
+
+- Link: [https://cran.r-project.org/web/packages/FuzzyClass/FuzzyClass.pdf](https://cran.r-project.org/web/packages/FuzzyClass/FuzzyClass.pdf)
+
+ou 
+
+- Link: [https://cran.r-project.org/package=FuzzyClass](https://cran.r-project.org/package=FuzzyClass)
+
+![Página do FuzzyClass no CRAN.R](images/cran_fuzzyclass_help.png){fig-align="center" width="900"}
+
+
+------------------------------------------------------------------------
+
+## R - Execução dos métodos
+
+<hr/>
+
+<br/> 
+
+
+Vamos selecionar um método de Zadeh e um de Buckley para execução, pois
+o procedimento com os outros são iguais.
+
+Vamos utilizar:
+
+- `FuzzyTrapezoidalNaiveBayes`;
+
+e
+
+- `FuzzyBetaNaiveBayes`;
+
+
+
+
+------------------------------------------------------------------------
+
+## R -Divindo a base 
+
+<hr/>
+
+<br/> 
+
+
+```{r, echo=TRUE, eval=TRUE}
+set.seed(2)
+# Separando entre treinamento e teste
+split <- caTools::sample.split(t(dados_editado[,1]), SplitRatio = 0.7) # 70% para o Treinamento
+# -----
+Train <- subset(dados_editado, split == "TRUE")
+Test <- subset(dados_editado, split == "FALSE")
+# ----------------
+```
+
+```{r, echo=TRUE, eval=TRUE}
+# Verificando um cabeçalho de Train
+Train |> head(n=3)
+# ---
+nrow(dados_editado)
+nrow(Train)
+nrow(Test)
+```
+
+------------------------------------------------------------------------
+
+## R -Divindo a base 
+
+<hr/>
+
+
+Fazendo transformação de dados para utilização da Beta
+
+```{r, echo=TRUE, eval=TRUE}
+set.seed(2)
+dados_editado_beta <- dados_editado
+for(i in 1:(ncol(dados_editado)-1)) dados_editado_beta[,i] <- dados_editado_beta[,i]/ max(dados_editado_beta[,i])
+# Separando entre treinamento e teste
+split <- caTools::sample.split(t(dados_editado_beta[,1]), SplitRatio = 0.7) # 70% para o Treinamento
+# -----
+TrainB <- subset(dados_editado_beta, split == "TRUE")
+TestB <- subset(dados_editado_beta, split == "FALSE")
+# ----------------
+```
+
+```{r, echo=TRUE, eval=TRUE}
+# Verificando um cabeçalho de Train
+TrainB |> head(n=3)
+# ---
+nrow(dados_editado_beta)
+nrow(TrainB)
+nrow(TestB)
+```
+
+
+
+------------------------------------------------------------------------
+
+## R - Aplicando o treinamento dos algoritmos
+
+<hr/>
+
+<br/> 
+
+- Fuzzy Trapezoidal Naive Bayes Naive Bayes:
+
+```{r, echo=TRUE, eval=TRUE}
+# --------------------------------------------------
+# Fuzzy Trapezoidal Naive Bayes
+fit_FTrapeNB <- FuzzyTrapezoidalNaiveBayes(train =  Train[,-5],
+                                    cl = Train[,5])
+# ----------------
+```
+
+
+- Fuzzy Beta Naive Bayes:
+
+```{r, echo=TRUE, eval=TRUE}
+# --------------------------------------------------
+# Fuzzy Beta Naive Bayes
+fit_FBNB <- FuzzyBetaNaiveBayes(train =  TrainB[,-5],
+                                    cl = TrainB[,5])
+# ----------------
+```
+
+
+
+------------------------------------------------------------------------
+
+## R - Fazendo a predição dos dados
+
+<hr/>
+
+<br/> 
+
+Criando uma nova variável sem a coluna verdadeira da classificação com a parte de `Test`
+
+```{r, echo=TRUE, eval=TRUE}
+# --------------------------------------------------
+test = Test[,-c(5)]
+testB = TestB[,-c(5)]
+# ----------------
+```
+
+
+- Fuzzy Trapezoidal Naive Bayes:
+
+```{r, echo=TRUE, eval=TRUE}
+# --------------------------------------------------
+# Fuzzy Trapezoidal Naive Bayes
+classificacao <- predict(fit_FTrapeNB, test)
+# ----------------
+```
+
+
+- Fuzzy Beta Naive Bayes:
+```{r, echo=TRUE, eval=TRUE}
+# --------------------------------------------------
+# Fuzzy Beta Naive Bayes
+classificacao_Beta <- predict(fit_FBNB, testB)
+# ----------------
+```
+
+
+
+
+------------------------------------------------------------------------
+
+## R - Verificando a matriz de confusão
+
+<hr/>
+
+<br/> 
+
+Verificando a eficácia dos algoritmos utilizados nesse estudo
+
+
+- Fuzzy Gamma Naive Bayes:
+
+```{r, echo=TRUE, eval=TRUE}
+# --------------------------------------------------
+# Fuzzy Trapezoidal Naive Bayes
+caret::confusionMatrix(classificacao, factor(Test[,5]))
+# ----------------
+```
+
+
+
+------------------------------------------------------------------------
+
+## R - Verificando a matriz de confusão
+
+<hr/>
+
+<br/> 
+
+- Fuzzy Gaussian Naive Bayes with Fuzzy Parameters:
+```{r, echo=TRUE, eval=TRUE}
+# --------------------------------------------------
+# Fuzzy Beta Naive Bayes
+caret::confusionMatrix(classificacao_Beta, factor(TestB[,5]))
+# ----------------
+```
+
+
+
+------------------------------------------------------------------------
+
+
+
+
+## Conclusões
+
+<hr/>
+
+<br/>
+
+O que podemos concluir de forma breve até esse momento com o
+estudo:
+
+<br/>
+
+* Pelo pacote FuzzyClass é possível fazer classificação de dados, utilizando
+várias abordagens propostas;
+* Existem abordagens de classificação utilizando probabilidades *fuzzy* na
+na proposta de Zadeh e de Buckley;
+* O pacote encontra-se disponível no CRAN para toda a comunidade utilizar;
+* É possível fazer estimação dos parâmetros, assim como predição das classes
+para novas observações.
+
+------------------------------------------------------------------------
+
+<br/> <br/> <br/> <br/>
+
+<hr/>
+
+<h1 style="text-align: center;">
+
+OBRIGADO!
+
+</h1>
+
+<hr/>
+
+::: {style="text-align: center"}
+Slide produzido com [quarto](https://quarto.org/)
+:::
+
+
